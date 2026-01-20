@@ -1,4 +1,4 @@
-FROM node:24-slim AS base
+FROM node:24-slim
 
 WORKDIR /usr/src/app
 
@@ -11,7 +11,7 @@ COPY . .
 RUN npm install
 RUN npm run build
 
-FROM node:22
+FROM node:24-slim
 
 WORKDIR /usr/src/app
 COPY package*.json ./
