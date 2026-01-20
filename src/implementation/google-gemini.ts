@@ -1,7 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { loadEnvFile } from "node:process";
-
-loadEnvFile();
+import 'dotenv/config';
 
 const googleAi = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY!,
