@@ -28,7 +28,7 @@ app.options("*", corsMiddleware);
 
 app.use(router);
 
-const port = Number(process.env.PORT ?? 3000);
+const port = Number(process.env.PORT ?? 8080);
 app.listen(port, () => {
   console.log(`Listening on http://localhost:${port}`);
 });
