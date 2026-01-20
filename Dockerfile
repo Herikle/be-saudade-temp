@@ -1,26 +1,19 @@
 FROM node:24-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
+WORKDIR /app
 
-WORKDIR /usr/src/app
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
-COPY package*.json ./
-COPY tsconfig.json ./tsconfig.json
-COPY src ./src
-
-COPY . .
-
-RUN pnpm install
+FROM base AS build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run build
 
-FROM node:24-slim
-
-WORKDIR /usr/src/app
-COPY package*.json ./
-COPY tsconfig.json ./tsconfig.json
-COPY src ./src
-RUN pnpm install
-COPY --from=0 /usr/src/app/dist ./dist
-EXPOSE 8080
-
-RUN pnpm build
-
-CMD pnpm start
+FROM base
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/dist /app/dist
+EXPOSE 8000
+CMD [ "pnpm", "start" ]
