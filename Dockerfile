@@ -1,24 +1,26 @@
-# syntax=docker/dockerfile:1
-
 FROM node:24-slim AS base
-WORKDIR /app
-ENV NODE_ENV=production
 
-FROM base AS deps
-RUN corepack enable
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+WORKDIR /usr/src/app
 
-FROM deps AS build
-COPY tsconfig.json ./
+COPY package*.json ./
+COPY tsconfig.json ./tsconfig.json
 COPY src ./src
+
+COPY . .
+
+RUN pnpm install
 RUN pnpm run build
 
-FROM base AS runner
-RUN corepack enable
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --prod
-COPY --from=build /app/dist ./dist
-ENV PORT=8080
+FROM node:24-slim
+
+WORKDIR /usr/src/app
+COPY package*.json ./
+COPY tsconfig.json ./tsconfig.json
+COPY src ./src
+RUN pnpm install
+COPY --from=0 /usr/src/app/dist ./dist
 EXPOSE 8080
-CMD ["node", "dist/index.js"]
+
+RUN pnpm build
+
+CMD pnpm start
